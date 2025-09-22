@@ -1,6 +1,8 @@
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
+import io.restassured.response.Response;
 import model.Order;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,6 +15,8 @@ import static org.hamcrest.Matchers.notNullValue;
 @RunWith(Parameterized.class)
 public class OrderCreationTest {
     Order order;
+    OrderSteps orderSteps = new OrderSteps();
+    private Response response;
 
     public OrderCreationTest(Order order) {
         this.order = order;
@@ -33,16 +37,25 @@ public class OrderCreationTest {
         };
     }
 
-    OrderSteps OrderSteps = new OrderSteps();
-
     @Test
     @DisplayName("Создание заказа самоката с разным цветом")
     @Description("Проверка заказа самоката с разным цветом ")
     public void checkCreateOrder(){
-        OrderSteps.setOrder(order);
-        OrderSteps.createOrderSteps()
-                .then().statusCode(SC_CREATED)
+        orderSteps.setOrder(order);
+        response = orderSteps.createOrderSteps()
+                .then()
+                .statusCode(SC_CREATED)
                 .and()
-                .assertThat().body("track", notNullValue());
+                .assertThat().body("track", notNullValue())
+                .extract().response();
+    }
+
+    @After
+    public void cancelOrder() {
+
+        Long trackNumber = response.jsonPath().getLong("track");
+
+
+        OrderSteps.cancelOrder(trackNumber);
     }
 }

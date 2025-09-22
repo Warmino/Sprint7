@@ -10,10 +10,23 @@ import static io.restassured.RestAssured.given;
 public class OrderSteps extends URLBase {
     private Order order;
     private final static String ENDPOINT_ORDERS = "/api/v1/orders";
+    private final static String ENDPOINT_CANCEL_ORDER = "/api/v1/orders/cancel";
 
     public void setOrder(Order order) {
         this.order = order;
     }
+
+
+    public static void cancelOrder(Long trackNumber) {
+        given()
+                .header("Content-Type", "application/json")
+                .body("{\"track\": " + trackNumber + "}")
+                .when()
+                .put(ENDPOINT_CANCEL_ORDER)
+                .then()
+                .log().all();
+    }
+
 
     @Step("Создать заказ, проверить код ответа и номер заказа(track)")
     public Response createOrderSteps(){
